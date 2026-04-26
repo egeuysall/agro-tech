@@ -39,3 +39,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# ml training artifacts
+/ml/.venv/
+/ml/outputs*/
+/ml/*.pth
+/ml/*.onnx
+/ml/*.onnx.data
+/ml/*.zip

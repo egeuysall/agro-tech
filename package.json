@@ -6,7 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "ml:setup": "pnpm --filter @agrolens/ml setup",
+    "ml:train": "pnpm --filter @agrolens/ml train:production",
+    "ml:train:fast": "pnpm --filter @agrolens/ml train:fast",
+    "ml:train:b3": "pnpm --filter @agrolens/ml train:b3",
+    "ml:sync": "pnpm --filter @agrolens/ml sync:model"
   },
   "dependencies": {
     "next": "16.2.3",

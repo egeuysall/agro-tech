@@ -1,6 +1,15 @@
 # AgroLens
 
-AgroLens is a Next.js plant disease detection MVP. It accepts a leaf image, runs a locally bundled EfficientNet-B1 ONNX model through a Next.js API route, and returns the top disease predictions with confidence scores.
+AgroLens is a plant disease detection MVP. It accepts a leaf image, runs a locally bundled EfficientNet-B1 ONNX model through a Next.js API route, and returns the top disease predictions with confidence scores.
+
+## Monorepo
+
+```text
+.
+├── src/            Next.js app and API routes
+├── models/         ONNX model artifacts loaded by the API
+└── ml/             PyTorch training and ONNX export pipeline
+```
 
 ## Run Locally
 
@@ -17,6 +26,22 @@ Open `http://localhost:3000`.
 pnpm build
 pnpm start
 ```
+
+## Train The Model
+
+```bash
+pnpm ml:setup
+pnpm ml:train
+pnpm ml:sync
+```
+
+`pnpm ml:train` runs the production EfficientNet-B1 training command:
+
+```bash
+PYTORCH_ENABLE_MPS_FALLBACK=1 PYTORCH_MPS_HIGH_WATERMARK_RATIO=1.2 PYTORCH_MPS_LOW_WATERMARK_RATIO=1.0 .venv/bin/python train_plant_disease.py --preset full --model-name efficientnet_b1 --epochs 15 --batch-size 64 --num-workers 4 --out-dir outputs_production_b1_15ep
+```
+
+The current bundled model was trained for 15 epochs and reached 99.94% best validation accuracy on the PlantVillage validation split.
 
 ## Model Files
 

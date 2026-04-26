@@ -1,0 +1,11 @@
+{
+  "name": "@agrolens/ml",
+  "private": true,
+  "scripts": {
+    "setup": "uv venv --python 3.12 .venv && uv pip install --python .venv/bin/python -r requirements.txt",
+    "train:fast": ".venv/bin/python train_plant_disease.py --preset fast-5m --out-dir outputs_fast",
+    "train:production": "PYTORCH_ENABLE_MPS_FALLBACK=1 PYTORCH_MPS_HIGH_WATERMARK_RATIO=1.2 PYTORCH_MPS_LOW_WATERMARK_RATIO=1.0 .venv/bin/python train_plant_disease.py --preset full --model-name efficientnet_b1 --epochs 15 --batch-size 64 --num-workers 4 --out-dir outputs_production_b1_15ep",
+    "train:b3": "PYTORCH_ENABLE_MPS_FALLBACK=1 PYTORCH_MPS_HIGH_WATERMARK_RATIO=1.2 PYTORCH_MPS_LOW_WATERMARK_RATIO=1.0 .venv/bin/python train_plant_disease.py --preset full --model-name efficientnet_b3 --epochs 15 --batch-size 32 --num-workers 4 --out-dir outputs_production_b3_15ep",
+    "sync:model": "cp outputs_production_b1_15ep/class_names.json ../models/class_names.json && cp outputs_production_b1_15ep/plant_disease_model.onnx ../models/plant_disease_model.onnx && cp outputs_production_b1_15ep/plant_disease_model.onnx.data ../models/plant_disease_model.onnx.data"
+  }
+}

@@ -1,0 +1,11 @@
+kagglehub
+matplotlib
+numpy
+onnx
+onnxruntime
+onnxscript
+pillow
+timm
+torch
+torchvision
+tqdm
