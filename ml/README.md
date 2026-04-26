@@ -41,3 +41,12 @@ pnpm ml:sync
 ```
 
 That copies the ONNX export and class labels into `../models`, where the Next.js API route loads them.
+
+## Training Artifacts
+
+The current production run visuals are kept in `ml/artifacts/`:
+
+```text
+ml/artifacts/sample_batch.png
+ml/artifacts/training_curves.png
+```
