@@ -1,36 +1,62 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AgroLens
 
-## Getting Started
+AgroLens is a Next.js plant disease detection MVP. It accepts a leaf image, runs a locally bundled EfficientNet-B1 ONNX model through a Next.js API route, and returns the top disease predictions with confidence scores.
 
-First, run the development server:
+## Run Locally
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm install
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Production Build
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+pnpm build
+pnpm start
+```
 
-## Learn More
+## Model Files
 
-To learn more about Next.js, take a look at the following resources:
+The app expects these files under `models/`:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```text
+models/class_names.json
+models/plant_disease_model.onnx
+models/plant_disease_model.onnx.data
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Keep the `.onnx` and `.onnx.data` files together. The API route loads them from `process.cwd()/models`.
 
-## Deploy on Vercel
+## API
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+`POST /api/predict`
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Multipart form field:
+
+```text
+image: JPEG, PNG, or WebP, max 8 MB
+```
+
+Response:
+
+```json
+{
+  "model": "efficientnet_b1_plant_disease",
+  "confidenceBand": "high",
+  "predictions": [
+    {
+      "label": "Potato___Early_blight",
+      "crop": "Potato",
+      "condition": "Early blight",
+      "confidence": 0.876
+    }
+  ]
+}
+```
+
+## Notes
+
+Validation accuracy was high on PlantVillage-style images. Real field photos may be harder because of lighting, background, blur, and multiple leaves. Treat low-confidence predictions as uncertain and ask for a clearer image.

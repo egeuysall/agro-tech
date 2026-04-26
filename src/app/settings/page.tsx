@@ -1,214 +1,108 @@
-"use client";
-
 import Link from "next/link";
-import { useState } from "react";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarInset,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarProvider,
-  SidebarRail,
-  SidebarSeparator,
-  useSidebar,
-} from "@/components/ui/sidebar";
-
-const API_URL_KEY = "agro-tech:chat-api-url";
-const DEFAULT_API_URL = process.env.NEXT_PUBLIC_CHAT_API_URL ?? "";
-
-function isValidApiUrl(url: string): boolean {
-  try {
-    const parsed = new URL(url);
-    return parsed.protocol === "http:" || parsed.protocol === "https:";
-  } catch {
-    return false;
-  }
-}
-
-function MobileSidebarToggle() {
-  const { toggleSidebar } = useSidebar();
-
-  return (
-    <Button
-      type="button"
-      variant="ghost"
-      size="sm"
-      className="h-8 md:hidden"
-      onClick={toggleSidebar}
-    >
-      Menu
-    </Button>
-  );
-}
+const APP_SHELL = "mx-auto w-full max-w-[92rem] px-6";
 
 export default function SettingsPage() {
-  const [apiUrl, setApiUrl] = useState(() => {
-    if (typeof window === "undefined") return DEFAULT_API_URL;
-    const saved = window.localStorage.getItem(API_URL_KEY);
-    if (saved && !DEFAULT_API_URL) return saved;
-    return DEFAULT_API_URL;
-  });
-  const [status, setStatus] = useState<string>("");
-
-  const onSave = () => {
-    const trimmed = apiUrl.trim();
-
-    if (trimmed.length > 0 && !isValidApiUrl(trimmed)) {
-      setStatus("API URL must be a valid http or https URL.");
-      return;
-    }
-
-    if (trimmed.length === 0) {
-      window.localStorage.removeItem(API_URL_KEY);
-      setStatus("Saved. Built in OpenAI fallback is active.");
-      return;
-    }
-
-    window.localStorage.setItem(API_URL_KEY, trimmed);
-    setStatus("Saved.");
-  };
-
-  const onReset = () => {
-    setApiUrl("");
-    window.localStorage.removeItem(API_URL_KEY);
-    setStatus("Reset. Built in OpenAI fallback is active.");
-  };
-
   return (
-    <SidebarProvider defaultOpen>
-      <Sidebar
-        collapsible="offcanvas"
-        variant="sidebar"
-        className="border-r border-sidebar-border bg-sidebar"
-      >
-        <SidebarHeader className="gap-2 px-3 py-3">
-          <Button
-            variant="default"
-            size="default"
-            className="h-9 justify-start bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary/90"
-            render={<Link href="/" />}
+    <main className="flex min-h-screen flex-col bg-background text-foreground">
+      <header className="border-b border-border bg-card">
+        <div className={`${APP_SHELL} flex items-center justify-between gap-4 py-5`}>
+          <div>
+            <p className="text-2xl font-semibold">Model Settings</p>
+            <p className="text-sm text-muted-foreground sm:text-base">
+              Local inference configuration for AgroLens
+            </p>
+          </div>
+          <Link
+            href="/"
+            className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            New chat
-          </Button>
-        </SidebarHeader>
+            Back to app
+          </Link>
+        </div>
+      </header>
 
-        <SidebarSeparator />
-
-        <SidebarContent>
-          <SidebarGroup>
-            <SidebarGroupLabel>Navigation</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton render={<Link href="/" />}>
-                    <span>Chat</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton isActive render={<Link href="/settings" />}>
-                    <span>Settings</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        </SidebarContent>
-
-        <SidebarFooter className="px-3 pb-3 pt-0">
-          <Button
-            type="button"
-            variant="outline"
-            size="default"
-            className="h-9 justify-start"
-            render={<Link href="/" />}
-          >
-            Back to chat
-          </Button>
-        </SidebarFooter>
-
-        <SidebarRail />
-      </Sidebar>
-
-      <SidebarInset className="bg-background">
-        <main className="flex min-h-screen flex-col">
-          <header className="sticky top-0 z-20 border-b border-border bg-background/95 backdrop-blur">
-            <div className="mx-auto flex w-full max-w-3xl items-center gap-3 px-4 py-3">
-              <MobileSidebarToggle />
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-lg font-semibold text-foreground">Settings</p>
-              </div>
-            </div>
-          </header>
-
-          <section className="mx-auto w-full max-w-3xl px-4 py-6">
-            <div className="rounded-md border border-border bg-card p-5">
-              <p className="text-base font-semibold text-foreground">API Endpoint</p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Configure your custom API endpoint for chat requests.
-              </p>
-
-              <div className="mt-6">
-                <label
-                  htmlFor="api-url"
-                  className="text-xs uppercase tracking-[0.12em] text-muted-foreground"
-                >
-                  Custom API URL optional
-                </label>
-                <Input
-                  id="api-url"
-                  name="api-url"
-                  value={apiUrl}
-                  onChange={(event) => {
-                    setApiUrl(event.target.value);
-                    if (status) setStatus("");
-                  }}
-                  placeholder="https://your-api.example.com/chat"
-                  autoComplete="off"
-                  spellCheck={false}
-                  className="mt-2 h-9 bg-background"
-                />
-                <p className="mt-2 text-xs text-muted-foreground">
-                  Leave empty to use built in OpenAI fallback at /api/chat
-                </p>
-              </div>
-
-              <div className="mt-5 flex items-center gap-2">
-                <Button
-                  type="button"
-                  size="default"
-                  className="h-9"
-                  onClick={onSave}
-                >
-                  Save
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="default"
-                  className="h-9"
-                  onClick={onReset}
-                >
-                  Use fallback
-                </Button>
-              </div>
-
-              <p className="mt-3 text-xs text-muted-foreground">
-                {status || "Changes apply immediately in chat."}
+      <section className={`${APP_SHELL} flex flex-1 items-center py-8`}>
+        <div className="grid min-h-[50rem] w-full grid-rows-[auto_auto_1fr] gap-6 rounded-md border border-border bg-card p-8 shadow-sm">
+          <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_30rem]">
+            <div>
+              <p className="text-xl font-semibold">Production Model</p>
+              <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
+                AgroLens uses the locally trained EfficientNet-B1 plant disease
+                model through the Next.js API route. External AI gateway
+                configuration is no longer used.
               </p>
             </div>
-          </section>
-        </main>
-      </SidebarInset>
-    </SidebarProvider>
+
+            <div className="rounded-md border border-border bg-background p-8">
+              <p className="text-sm font-medium">Runtime</p>
+              <p className="mt-3 text-base text-muted-foreground">
+                Local server-side inference with ONNX Runtime and Sharp image
+                preprocessing.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid gap-7">
+            <dl className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+              <div className="min-h-44 rounded-md border border-border bg-background p-8">
+                <dt className="text-sm text-muted-foreground">Route</dt>
+                <dd className="mt-6 text-2xl font-semibold">/api/predict</dd>
+              </div>
+              <div className="min-h-44 rounded-md border border-border bg-background p-8">
+                <dt className="text-sm text-muted-foreground">Model</dt>
+                <dd className="mt-6 text-2xl font-semibold">EfficientNet-B1 ONNX</dd>
+              </div>
+              <div className="min-h-44 rounded-md border border-border bg-background p-8">
+                <dt className="text-sm text-muted-foreground">Input</dt>
+                <dd className="mt-6 text-2xl font-semibold">JPEG, PNG, WebP</dd>
+              </div>
+              <div className="min-h-44 rounded-md border border-border bg-background p-8">
+                <dt className="text-sm text-muted-foreground">Classes</dt>
+                <dd className="mt-6 text-2xl font-semibold">38 PlantVillage labels</dd>
+              </div>
+            </dl>
+
+            <div className="grid gap-6 lg:grid-cols-3">
+              <div className="min-h-48 rounded-md border border-border bg-background p-7">
+                <p className="text-lg font-semibold">Upload Rules</p>
+                <ul className="mt-5 space-y-3 text-sm text-muted-foreground">
+                  <li>One image per prediction</li>
+                  <li>Maximum upload size is 8 MB</li>
+                  <li>Images are normalized to 224 x 224</li>
+                </ul>
+              </div>
+
+              <div className="min-h-48 rounded-md border border-border bg-background p-7">
+                <p className="text-lg font-semibold">Confidence Bands</p>
+                <dl className="mt-5 space-y-3 text-sm">
+                  <div className="flex items-center justify-between gap-4">
+                    <dt className="text-muted-foreground">High</dt>
+                    <dd className="font-medium">85%+</dd>
+                  </div>
+                  <div className="flex items-center justify-between gap-4">
+                    <dt className="text-muted-foreground">Medium</dt>
+                    <dd className="font-medium">50-85%</dd>
+                  </div>
+                  <div className="flex items-center justify-between gap-4">
+                    <dt className="text-muted-foreground">Low</dt>
+                    <dd className="font-medium">Below 50%</dd>
+                  </div>
+                </dl>
+              </div>
+
+              <div className="min-h-48 rounded-md border border-border bg-background p-7">
+                <p className="text-lg font-semibold">Output</p>
+                <ul className="mt-5 space-y-3 text-sm text-muted-foreground">
+                  <li>Top five disease predictions</li>
+                  <li>Crop and condition labels</li>
+                  <li>Confidence score for each result</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
   );
 }
