@@ -1,14 +1,14 @@
-import { readFile } from "node:fs/promises";
+import { access, readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 
 import { NextResponse } from "next/server";
-import * as ort from "onnxruntime-node";
+import * as ort from "onnxruntime-web";
 import sharp from "sharp";
 
 export const runtime = "nodejs";
 
 const MODEL_DIR = path.join(process.cwd(), "models");
-const MODEL_PATH = path.join(MODEL_DIR, "plant_disease_model.onnx");
+const MODEL_PATH = path.join(MODEL_DIR, "plant_disease_model.single.onnx");
 const CLASS_NAMES_PATH = path.join(MODEL_DIR, "class_names.json");
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
@@ -28,10 +28,40 @@ type Prediction = {
 let sessionPromise: Promise<ort.InferenceSession> | null = null;
 let classNamesPromise: Promise<string[]> | null = null;
 
-function getSession() {
-  sessionPromise ??= ort.InferenceSession.create(MODEL_PATH, {
-    executionProviders: ["cpu"],
-  });
+async function resolveOrtWebDistDir() {
+  const directDist = path.join(process.cwd(), "node_modules", "onnxruntime-web", "dist");
+  try {
+    await access(directDist);
+    return `${directDist}/`;
+  } catch {}
+
+  const pnpmDir = path.join(process.cwd(), "node_modules", ".pnpm");
+  const entries = await readdir(pnpmDir, { withFileTypes: true });
+  const match = entries.find((entry) => entry.isDirectory() && entry.name.startsWith("onnxruntime-web@"));
+  if (!match) {
+    throw new Error("Unable to locate onnxruntime-web runtime files.");
+  }
+
+  const pnpmDist = path.join(
+    pnpmDir,
+    match.name,
+    "node_modules",
+    "onnxruntime-web",
+    "dist",
+  );
+  await access(pnpmDist);
+  return `${pnpmDist}/`;
+}
+
+async function getSession() {
+  sessionPromise ??= (async () => {
+    ort.env.wasm.wasmPaths = await resolveOrtWebDistDir();
+    ort.env.wasm.numThreads = 1;
+    const model = await readFile(MODEL_PATH);
+    return ort.InferenceSession.create(model, {
+      executionProviders: ["wasm"],
+    });
+  })();
 
   return sessionPromise;
 }
